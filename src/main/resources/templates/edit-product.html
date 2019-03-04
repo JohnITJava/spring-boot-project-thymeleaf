@@ -23,9 +23,7 @@
 
 <div th:replace="~{navigation :: navi(AddProduct)}"/>
 
-
 <div class="container">
-
     <div class="form-group">
         <div class="col-xs-15">
             <div th:if="${productCreationError != null}">
@@ -36,18 +34,17 @@
         </div>
     </div>
 
-    <form th:action="@{/product/add}" th:object="${product}" method="post">
-
+    <form th:action="@{/product/edit}" th:object="${product}" method="post">
+        <input hidden type="text" th:field="*{id}" class="form-control" id="productId">
         <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}" />
         <div class="form-group">
             <label for="productTitle">Название</label>
             <input type="text" th:field="*{title}" class="form-control" id="productTitle" placeholder="Введите название товара">
         </div>
-
         <div class="error" th:if="${#fields.hasErrors('cost')}" th:errors="*{cost}" />
         <div class="form-group">
             <label for="productCost">Цена</label>
-            <input th:field="*{cost}" type="text" class="form-control" id="productCost" placeholder="Введите цену товара">
+            <input th:field="*{cost}" type="number" class="form-control" id="productCost" placeholder="Введите цену товара">
         </div>
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </form>

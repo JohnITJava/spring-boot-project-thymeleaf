@@ -24,4 +24,8 @@ public interface ProductsRepository extends PagingAndSortingRepository<Product, 
 
     Page<Product> findAll(Pageable pageable);
 
+    Page<Product> findProductByCostBetween(Pageable pageable, double min, double max);
+
+    Product findOneByTitle(String title);
+
 }

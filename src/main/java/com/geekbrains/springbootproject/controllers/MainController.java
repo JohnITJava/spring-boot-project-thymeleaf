@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Controller
@@ -25,36 +27,41 @@ public class MainController {
     public String showHomePage(Model model, @RequestParam(required = false) Double min,
                                @RequestParam(required = false) Double max) {
 
+        List<Product> allProducts = null;
+
         if (min == null && max == null){
-            List<Product> allProducts = productsService.getAllProducts();
-            model.addAttribute("products", allProducts);
-            return "index";
+            allProducts = productsService.getAllProducts();
         }
 
         if (min != null && min >= 0 && max == null) {
-            List<Product> allProducts = productsService.getProductsByCoastGreaterThan(min);
-            model.addAttribute("products", allProducts);
-            return "index";
+            allProducts = productsService.getProductsByCoastGreaterThan(min);
         }
 
-        if (min == null && max >= 0){
-            List<Product> allProducts = productsService.getProductsByCoastLessThan(max);
-            model.addAttribute("products", allProducts);
-            return "index";
+        if (min == null && max!=null && max >= 0){
+            allProducts = productsService.getProductsByCoastLessThan(max);
         }
 
-        if (min != null && min >= 0 && max >= 0){
-            List<Product> allProducts = productsService.getProductsByCoastBetween(min, max);
-            model.addAttribute("products", allProducts);
-            return "index";
+        if (min != null && min >= 0 && max!=null && max >= 0){
+            allProducts = productsService.getProductsByCoastBetween(min, max);
         }
 
+        model.addAttribute("products", allProducts);
+        model.addAttribute("min", min);
+        model.addAttribute("max", max);
         return "index";
     }
 
     @GetMapping("/{pageNum}")
-    public String showHomePage(Model model, @PathVariable("pageNum") Integer pageNum) {
-        List<Product> allProducts = productsService.getProductsByPage(pageNum);
+    public String showHomePage(Model model, @PathVariable("pageNum") Integer pageNum,
+                               @RequestParam(required = false) Double min,
+                               @RequestParam(required = false) Double max) {
+        List<Product> allProducts = null;
+        if (min == null && max == null){
+        allProducts = productsService.getProductsByPage(pageNum);
+        } else {
+            allProducts = productsService.getProductsByPageFilterByCost(pageNum, min, max);
+        }
+
         model.addAttribute("products", allProducts);
         return "index";
     }
@@ -64,17 +71,9 @@ public class MainController {
         return "info";
     }
 
-    @GetMapping("/product/add")
-    public String addProductPage(Model model) {
-        Product product = new Product();
-        model.addAttribute("product", product);
-        return "add-product";
-    }
-
-    @PostMapping("/product/add")
-    public String addProduct(Model model, @ModelAttribute("product") Product product) {
-        productsService.saveOrUpdate(product);
-        return "redirect:/";
+    @GetMapping("/international")
+    public String internationalPage() {
+        return "international";
     }
 
 }

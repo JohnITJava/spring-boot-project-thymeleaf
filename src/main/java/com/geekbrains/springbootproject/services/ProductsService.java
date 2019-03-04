@@ -41,4 +41,16 @@ public class ProductsService {
     public List<Product> getProductsByPage(int page){
         return productsRepository.findAll(PageRequest.of(page - 1, 5)).getContent();
     }
+
+    public List<Product> getProductsByPageFilterByCost(int page, Double min, Double max){
+        return productsRepository.findProductByCostBetween(PageRequest.of(page - 1, 5), min, max).getContent();
+    }
+
+    public Product findById(Long id){
+        return productsRepository.findById(id).orElse(null);
+    }
+
+    public Product findByTitle(String title){
+        return productsRepository.findOneByTitle(title);
+    }
 }

@@ -34,7 +34,7 @@
         <table class="table table-hover">
             <thead class="thead-dark">
             <tr>
-                <th>ID</th>
+                <th style="display: none">ID</th>
                 <th>Название</th>
                 <th>Цена</th>
                 <th>Действия</th>
@@ -42,14 +42,14 @@
             </thead>
             <tbody>
             <tr th:each="product : ${products}" th:attr="prod_index=${product.id}">
-                <td th:text="${product.id}"/>
+                <td th:hidden="${product.id}"/>
                 <td th:text="${product.title}"/>
                 <td>
-                            <span th:text="${product.cost}"
-                                  th:classAppend="${product.cost > 40.0} ? 'badge badge-danger' : ''"/>
+                    <span th:text="${product.cost}"
+                          th:classAppend="${product.cost > 40.0} ? 'badge badge-danger' : ''"/>
                 </td>
                 <td>
-                    <a th:href="@{'/info/' + ${product.id}}" th:text="Информация"/>
+                    <a th:href="@{'/product/edit/' + ${product.id}}" th:text="Edit"/>
                 </td>
             </tr>
             </tbody>
