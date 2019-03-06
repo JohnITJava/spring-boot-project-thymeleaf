@@ -36,7 +36,7 @@ public class ProductController {
             return "edit-product";
         }
         Product existing = productsService.findByTitle(product.getTitle());
-        if (existing != null && !product.getId().equals(existing.getId())) {
+        if (existing != null && (product.getId() == null || !product.getId().equals(existing.getId()))) {
             // product.setTitle(null);
             model.addAttribute("product", product);
             model.addAttribute("productCreationError", "Product title already exists");
