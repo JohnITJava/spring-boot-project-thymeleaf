@@ -5,6 +5,7 @@ import com.geekbrains.springbootproject.repositories.ProductsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,15 +43,15 @@ public class ProductsService {
         return productsRepository.findAll(PageRequest.of(page - 1, 5)).getContent();
     }
 
-    public List<Product> getProductsByPageFilterByCost(int page, Double min, Double max){
-        return productsRepository.findProductByCostBetween(PageRequest.of(page - 1, 5), min, max).getContent();
-    }
-
     public Product findById(Long id){
         return productsRepository.findById(id).orElse(null);
     }
 
     public Product findByTitle(String title){
         return productsRepository.findOneByTitle(title);
+    }
+
+    public Page<Product> getProductsByPageAndFilter(int pageNum, int pageSize, Specification<Product> productSpecification){
+        return productsRepository.findAll(productSpecification, PageRequest.of(pageNum, pageSize));
     }
 }

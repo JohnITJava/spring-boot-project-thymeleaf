@@ -2,9 +2,11 @@ package com.geekbrains.springbootproject.controllers;
 
 import com.geekbrains.springbootproject.entities.Product;
 import com.geekbrains.springbootproject.repositories.ProductsRepository;
+import com.geekbrains.springbootproject.repositories.specifications.ProductSpecs;
 import com.geekbrains.springbootproject.services.ProductsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,11 +14,15 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class MainController {
 
     private ProductsService productsService;
+
+    private static final int PAGE_SIZE = 5;
+    private static final int INITIAL_PAGE = 0;
 
     @Autowired
     public void setProductsService(ProductsService productsService) {
@@ -24,45 +30,39 @@ public class MainController {
     }
 
     @GetMapping("/")
-    public String showHomePage(Model model, @RequestParam(required = false) Double min,
-                               @RequestParam(required = false) Double max) {
+    public String showHomePage(Model model,
+                               @RequestParam(value = "page") Optional<Integer> page,
+                               @RequestParam(value = "word", required = false) String word,
+                               @RequestParam(value = "min", required = false) Double min,
+                               @RequestParam(value = "max", required = false) Double max) {
 
-        List<Product> allProducts = null;
+        final int currentPage = (page.orElse(0) < 1) ? INITIAL_PAGE : page.get() - 1;
 
-        if (min == null && max == null){
-            allProducts = productsService.getAllProducts();
+        Specification<Product> spec = Specification.where(null);
+        StringBuilder filters = new StringBuilder();
+        if (word != null){
+            spec = spec.and(ProductSpecs.titleContains(word));
+            filters.append("&word=" + word);
+        }
+        if (min != null){
+            spec = spec.and(ProductSpecs.priceGreaterThanOrEq(min));
+            filters.append("&min=" + min);
+        }
+        if (max != null){
+            spec = spec.and(ProductSpecs.priceLessThanOrEq(max));
+            filters.append("&max=" + max);
         }
 
-        if (min != null && min >= 0 && max == null) {
-            allProducts = productsService.getProductsByCoastGreaterThan(min);
-        }
+        Page<Product> products = productsService.getProductsByPageAndFilter(currentPage, PAGE_SIZE, spec);
 
-        if (min == null && max!=null && max >= 0){
-            allProducts = productsService.getProductsByCoastLessThan(max);
-        }
-
-        if (min != null && min >= 0 && max!=null && max >= 0){
-            allProducts = productsService.getProductsByCoastBetween(min, max);
-        }
-
-        model.addAttribute("products", allProducts);
+        model.addAttribute("products", products.getContent());
+        model.addAttribute("page", currentPage);
+        model.addAttribute("totalPage", products.getTotalPages());
+        model.addAttribute("filters", filters.toString());
         model.addAttribute("min", min);
         model.addAttribute("max", max);
-        return "index";
-    }
+        model.addAttribute("word", word);
 
-    @GetMapping("/{pageNum}")
-    public String showHomePage(Model model, @PathVariable("pageNum") Integer pageNum,
-                               @RequestParam(required = false) Double min,
-                               @RequestParam(required = false) Double max) {
-        List<Product> allProducts = null;
-        if (min == null && max == null){
-        allProducts = productsService.getProductsByPage(pageNum);
-        } else {
-            allProducts = productsService.getProductsByPageFilterByCost(pageNum, min, max);
-        }
-
-        model.addAttribute("products", allProducts);
         return "index";
     }
 
